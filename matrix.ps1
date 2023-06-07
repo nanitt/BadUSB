@@ -12,4 +12,4 @@ $s.Rate = -2
 $s.Speak($Sentence)
 }
 
-speak wake up neo.
+speak "wake up neo".
