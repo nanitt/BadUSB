@@ -59,6 +59,7 @@ $MAC = Get-NetAdapter -Name "*Ethernet*","*Wi-Fi*"| Select Name, MacAddress, Sta
 #------------------------------------------------------------------------------------------------------------------------------------
 
 #Get System Info
+$computerSystem = Get-CimInstance CIM_ComputerSystem
 
 $computerName = $computerSystem.Name
 
@@ -130,7 +131,6 @@ $computerPubIP
 
 Local IPs:
 $localIP
-
 MAC:
 $MAC
 
