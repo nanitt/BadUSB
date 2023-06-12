@@ -105,8 +105,7 @@ Full Name: $fullName
 Email: $email
 
 Location:
-$Lat
-$Lon
+https://ipgeolocation.io/$computerPubIP
 ------------------------------------------------------------------------------------------------------------------------------
 Public IP: 
 $computerPubIP
