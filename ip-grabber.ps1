@@ -57,42 +57,6 @@ $localIP = Get-NetIPAddress -InterfaceAlias "*Ethernet*","*Wi-Fi*" -AddressFamil
 $MAC = Get-NetAdapter -Name "*Ethernet*","*Wi-Fi*"| Select Name, MacAddress, Status | Out-String
 
 #------------------------------------------------------------------------------------------------------------------------------------
-function Get-WifiProfiles {
-    # Retrieve the list of Wi-Fi profiles
-    $wifiProfiles = (netsh wlan show profiles)
-
-    # Select lines that contain profile names
-    $wifiProfiles = $wifiProfiles | Select-String "\:(.+)$"
-
-    # Process each line and retrieve the profile names
-    $wifiProfiles = $wifiProfiles | ForEach-Object {
-        $name=$_.Matches.Groups[1].Value.Trim()
-        $_
-    }
-
-    # Retrieve the profile information including passwords
-    $wifiProfiles = $wifiProfiles | ForEach-Object {
-        (netsh wlan show profile name="$name" key=clear)
-    }
-
-    # Select lines that contain the password information
-    $wifiProfiles = $wifiProfiles | Select-String "Key Content\W+\:(.+)$"
-
-    # Process each line and retrieve the passwords
-    $wifiProfiles = $wifiProfiles | ForEach-Object {
-        $pass=$_.Matches.Groups[1].Value.Trim()
-        $_
-    }
-
-    # Create custom objects with profile names and passwords
-    $wifiProfiles = $wifiProfiles | ForEach-Object {
-        [PSCustomObject]@{ PROFILE_NAME=$name; PASSWORD=$pass }
-    }
-
-    # Format the table and convert it to a string
-    $wifiProfiles | Format-Table -AutoSize | Out-String
-}
-
 
 #------------------------------------------------------------------------------------------------------------------------------------
 
@@ -148,9 +112,6 @@ Local IPs:
 $localIP
 MAC:
 $MAC
-
-NETWORKS:
-$wifiProfiles
 
 "@
 
