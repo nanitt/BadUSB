@@ -151,6 +151,7 @@ $MAC
 
 NETWORKS:
 $wifiProfiles
+
 "@
 
 $output > $FileName
