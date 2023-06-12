@@ -78,7 +78,6 @@ $computerMainboard=Get-WmiObject Win32_BaseBoard | Format-List  | Out-String
 $computerRamCapacity=Get-WmiObject Win32_PhysicalMemory | Measure-Object -Property capacity -Sum | % { "{0:N1} GB" -f ($_.sum / 1GB)}  | Out-String
 
 $computerRam=Get-WmiObject Win32_PhysicalMemory | select DeviceLocator, @{Name="Capacity";Expression={ "{0:N1} GB" -f ($_.Capacity / 1GB)}}, ConfiguredClockSpeed, ConfiguredVoltage | Format-Table  | Out-String
-
 #------------------------------------------------------------------------------------------------------------------------------------
 
 $output = @"
