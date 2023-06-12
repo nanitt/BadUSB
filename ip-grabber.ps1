@@ -107,7 +107,6 @@ Email: $email
 ------------------------------------------------------------------------------------------------------------------------------
 Public IP: 
 $computerPubIP
-https://ipgeolocation.io/ip-location/$computerPubIP
 
 Local IPs:
 $localIP
