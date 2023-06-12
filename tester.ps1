@@ -17,24 +17,19 @@ $wifiProfiles > $env:TEMP/--output.txt
 ##################################
 
 function Get-fullName {
-
     try {
-    $fullName = (Get-LocalUser -Name $env:USERNAME).FullName
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+        $userSID = $currentUser.User.Value
+        $user = Get-WmiObject -Class Win32_UserAccount | Where-Object {$_.SID -eq $userSID}
+        $fullName = $user.FullName
     }
- 
- # If no name is detected function will return $env:UserName 
-
-    # Write Error is just for troubleshooting 
-    catch {Write-Error "No name was detected" 
-    return $env:UserName
-    -ErrorAction SilentlyContinue
+    catch {
+        Write-Error "Error occurred while retrieving full name: $_"
+        return $env:USERNAME
     }
 
-    return $fullName 
-
+    return $fullName
 }
-
-$fullName = Get-fullName
 
 ##################################
 
